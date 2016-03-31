@@ -26,12 +26,11 @@
    media.
 
    Their approach has a few problems
-
-     + It requires users to take the extra and often [relatively] complex set of steps to validate the installation media
-     + It assumes users are aware of the security concerns and dangers at hand
-     + The operating system distributions often host the PGP fingerprint along with cryptographic hash files over HTTP OR FTP.
+   + It requires users to take the extra and often [relatively] complex set of steps to validate the installation media
+   + It assumes users are aware of the security concerns and dangers at hand
+   + The operating system distributions often host the PGP fingerprint along with cryptographic hash files over HTTP OR FTP.
        if the attacker can modify the download media,so can he/she modify these signatures
-     + most current gpg installations use the HKP protocol to "refresh" and fetch the public key corresponding with the fingerprint,
+   + most current gpg installations use the HKP protocol to "refresh" and fetch the public key corresponding with the fingerprint,
        the HKP protocol in turn uses plain-text HTTP over a non-standard port for this action - the attacker who already has access
        to network traffic can simply serve the user a PGP fingerprint as well as corresponding public key over HKP to validate 
        the compromised installation media.
