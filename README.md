@@ -37,8 +37,8 @@
 
 # The many imprefections of TLS
 
-   TLS and the CA system are far from perfect. however simply using HTTPS will force the attacker to compromise the CA's or the user's computer 
-   (to inject a malicious CA  certificate) before he/she can attempt the type of attack described above.
+    TLS and the CA system are far from perfect. however simply using HTTPS will force the attacker to compromise the CA's or the user's computer 
+    (to inject a malicious CA  certificate) before he/she can attempt the type of attack described above.
 
     HTTPS/TLS is not mutually exclusive with GPG verification or cryptographic hash verification.
     Using TLS does not protect against a compromised server or a malicious mirror-server.
