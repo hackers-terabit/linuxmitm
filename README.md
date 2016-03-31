@@ -37,20 +37,20 @@
 
 # The many imprefections of TLS
 
-    TLS and the CA system are far from perfect. however simply using HTTPS will force the attacker to compromise the CA's or the user's computer 
-    (to inject a malicious CA  certificate) before he/she can attempt the type of attack described above.
+   TLS and the CA system are far from perfect. however simply using HTTPS will force the attacker to compromise the CA's or the user's computer 
+   (to inject a malicious CA  certificate) before he/she can attempt the type of attack described above.
 
-    HTTPS/TLS is not mutually exclusive with GPG verification or cryptographic hash verification.
-    Using TLS does not protect against a compromised server or a malicious mirror-server.
+   HTTPS/TLS is not mutually exclusive with GPG verification or cryptographic hash verification.
+   Using TLS does not protect against a compromised server or a malicious mirror-server.
 
-    Performance over HTTPS  compared to HTTP is not significant enough to overlook the security beneifits of the protocol. 
-    if performance is a problem there is nothing preventing distribution maintainers from offering HTTP side-by-side with HTTPS.
+   Performance over HTTPS  compared to HTTP is not significant enough to overlook the security beneifits of the protocol. 
+   if performance is a problem there is nothing preventing distribution maintainers from offering HTTP side-by-side with HTTPS.
 
-    It is not all that difficult to imagine (as the PoC will show) for a linux firewall or router to be compromised (does not need to be linux obviously).
-    however there is a significant challenge and difficulty for a majority of malicious actors on the internet to compromise a Certificate Authority.
+   It is not all that difficult to imagine (as the PoC will show) for a linux firewall or router to be compromised (does not need to be linux obviously).
+   however there is a significant challenge and difficulty for a majority of malicious actors on the internet to compromise a Certificate Authority.
 
-    Absolute security is neither purused or expected as a result of using TLS or HTTPS. the only thing expected is a significant improvement in integrity
-    and authenticity validation  of installation media. 
+   Absolute security is neither purused or expected as a result of using TLS or HTTPS. the only thing expected is a significant improvement in integrity
+   and authenticity validation  of installation media. 
 
 
 # PoC usage:
