@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Linuxmitm by hackers-terabit</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Linuxmitm</h1>
+        <h2></h2>
+
+        <section id="downloads">
+          <a href="https://github.com/hackers-terabit/linuxmitm/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/hackers-terabit/linuxmitm/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/hackers-terabit/linuxmitm" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="a-case-for-tls-backdooring-linux-installation-media" class="anchor" href="#a-case-for-tls-backdooring-linux-installation-media" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>A case for TLS: Backdooring Linux installation media</h1>
+
+<h1>
+<a id="problem-description" class="anchor" href="#problem-description" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Problem description:</h1>
+
+<p>Servers and workstations with Gnu/Linux or bsd family unix operating systems have a well designed,tested and thought out security architecture.
+   Administrators of these systems spend hours if not days of their lives securing and hardening their operating system installs.</p>
+
+<p>However a system cannot be secured if the installation of that system to begin with, has been compromised.</p>
+
+<p>This proof of concept project defines the threat model to be a man in the middle (MITM) attacker who has already compromised
+   any number of devices between the victim's computer (or virtual-machine) and the server hosting the operating system's installation media.</p>
+
+<p>In this particular scenario the compromised computer is a linux machine that forwards and routes network traffic for the victim's computer.</p>
+
+<p>Using the proof of concept script and/or the well known open source tools used by the script, the attacker will be able to insert a revrese shell
+   backdoor that he/she can later use to insert a more complex and targeted payload(s) to further compromise the victim's machine.</p>
+
+<h1>
+<a id="proposed-solution" class="anchor" href="#proposed-solution" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Proposed solution</h1>
+
+<p>Open source distribution maintainers should be using HTTPS (or any other connection with third party domain or server validation) for their installation media downloads.</p>
+
+<p>At the time of this writing most if not all major Linux distributions host installation media over HTTP and FTP connections.</p>
+
+<p>Their reasoning is this:
+   users can use cryptographic hash verification or GPG public key verification to validate the integrity and authenticity of the installation
+   media.</p>
+
+<p>Their approach has a few problems</p>
+
+<ul>
+<li>It requires users to take the extra and often [relatively] complex set of steps to validate the installation media</li>
+<li>It assumes users are aware of the security concerns and dangers at hand</li>
+<li>The operating system distributions often host the PGP fingerprint along with cryptographic hash files over HTTP OR FTP.
+   if the attacker can modify the download media,so can he/she modify these signatures</li>
+<li>
+<p>most current gpg installations use the HKP protocol to "refresh" and fetch the public key corresponding with the fingerprint,
+   the HKP protocol in turn uses plain-text HTTP over a non-standard port for this action - the attacker who already has access
+   to network traffic can simply serve the user a PGP fingerprint as well as corresponding public key over HKP to validate
+   the compromised installation media.</p>
+
+<p>If distribution maintainers refuse to use HTTPS even as a non-default option for installation media download,then they must maintain hash,pgp fingerprints and torrent files
+over HTTPS.
+Furthermore, PGP and hash verification instructions must be documented and maintained well. </p>
+
+<p>The verification instructions must be written so that anyone with minimal technical expertise can follow along.
+Such instructions most also be posted plainly as a mandatory requirement of the installation procedure on the same page a user initiates the download process.</p>
+</li>
+</ul>
+
+<h1>
+<a id="the-many-imperfections-of-tls" class="anchor" href="#the-many-imperfections-of-tls" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The many imperfections of TLS</h1>
+
+<p>TLS and the CA system are far from perfect. however simply using HTTPS will force the attacker to compromise the CA's or the user's computer
+   (to inject a malicious CA  certificate) before he/she can attempt the type of attack described above.</p>
+
+<p>HTTPS/TLS is not mutually exclusive with GPG verification or cryptographic hash verification.
+   Using TLS does not protect against a compromised server or a malicious mirror-server.</p>
+
+<p>Performance over HTTPS  compared to HTTP is not significant enough to overlook the security beneifits of the protocol.
+   if performance is a problem there is nothing preventing distribution maintainers from offering HTTP side-by-side with HTTPS.</p>
+
+<p>It is not all that difficult to imagine (as the PoC will show) for a linux firewall or router to be compromised (does not need to be linux obviously).
+   however there is a significant challenge and difficulty for a majority of malicious actors on the internet to compromise a Certificate Authority.</p>
+
+<p>Absolute security is neither purused or expected as a result of using TLS or HTTPS. the only thing expected is a significant improvement in integrity
+   and authenticity validation  of installation media.</p>
+
+<h1>
+<a id="brief-summary-of-installation-process-security-for-popular-distributions" class="anchor" href="#brief-summary-of-installation-process-security-for-popular-distributions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Brief summary of installation process security for popular distributions</h1>
+
+<table>
+<thead>
+<tr>
+<th align="left">Distribution</th>
+<th align="right">HTTPS Download</th>
+<th align="center">Hash checksum</th>
+<th align="left">PGP</th>
+<th align="left">GPG/Hash over HTTPS</th>
+<th align="left">Download page has PGP verification instructions</th>
+<th align="left">Torrent</th>
+<th align="left">Torrent file over HTTPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Funtoo Linux</td>
+<td align="right">NO</td>
+<td align="center">sha256</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Ubuntu</td>
+<td align="right">NO</td>
+<td align="center">sha256 md5</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Mint</td>
+<td align="right">NO</td>
+<td align="center">md5</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Debian</td>
+<td align="right">NO</td>
+<td align="center">md5,sha</td>
+<td align="left">Yes</td>
+<td align="left">BOTH*</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Mageia</td>
+<td align="right">NO</td>
+<td align="center">md5,sha256</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Fedora</td>
+<td align="right">NO</td>
+<td align="center">sha256</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+</tr>
+<tr>
+<td align="left">openSUSE</td>
+<td align="right">NO</td>
+<td align="center">sha256</td>
+<td align="left">Yes</td>
+<td align="left">Only GPG Fingerprint</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Arch Linux</td>
+<td align="right">NO</td>
+<td align="center">sha1,md5</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+</tr>
+<tr>
+<td align="left">Centos</td>
+<td align="right">NO</td>
+<td align="center">sha,md5</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">PCLinuxOS</td>
+<td align="right">NO</td>
+<td align="center">md5</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Slackware</td>
+<td align="right">NO</td>
+<td align="center">md5</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">Gentoo</td>
+<td align="right">NO</td>
+<td align="center">sha</td>
+<td align="left">Yes</td>
+<td align="left">Yes</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+</tr>
+<tr>
+<td align="left">FreeBSD</td>
+<td align="right">NO</td>
+<td align="center">md5,sha256</td>
+<td align="left">Yes</td>
+<td align="left">BOTH*</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+<td align="left">NO</td>
+</tr>
+</tbody>
+</table>
+
+<h1>
+<a id="poc-usage" class="anchor" href="#poc-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>PoC usage:</h1>
+
+<p>Please bear in mind, the PoC is still under continued development.</p>
+
+<p>Usage: <code>poc.sh &lt;Victim's IP&gt;  &lt;Command and control IP&gt;</code></p>
+
+<h1>
+<a id="contribute" class="anchor" href="#contribute" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contribute</h1>
+
+<p>Fork this project and contribute!</p>
+
+<h1>
+<a id="collaborate" class="anchor" href="#collaborate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Collaborate</h1>
+
+<p>Find us on IRC on freenode.net in ##hackers</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
