@@ -62,8 +62,8 @@
 
 
 # Brief summary of installation process security for popular distributions
-|    Distribution     |   HTTPS Download   |   Hash checksum   |   PGP   |  GPG/Hash over HTTPS   |   Download page has PGP verification instructions   | Torrent   | Torrent file over HTTPS   |
-| :-------         |          ----: | :---:         |     |                     |                                                   |           |                        |
+|    Distribution     |   HTTPS Download   |   Hash checksum   |   PGP   |  GPG/Hash over HTTPS   |   Download page has PGP verification instructions   | Torrent   | Torrent file over HTTPS   
+| :-------         |          ----: | :---:         |:-------   |   :-------       |   :-------                                  |  :-------   |     :-------        |       :------- 
 | Funtoo Linux | NO |  sha256    | NO | NO | NO | NO | NO
 | Ubuntu        | NO | sha256 md5 | Yes| NO | NO | Yes| NO
 | Mint         | NO | md5        | Yes| NO | NO | Yes| NO
