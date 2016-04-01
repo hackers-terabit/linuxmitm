@@ -34,7 +34,15 @@
        the HKP protocol in turn uses plain-text HTTP over a non-standard port for this action - the attacker who already has access
        to network traffic can simply serve the user a PGP fingerprint as well as corresponding public key over HKP to validate
        the compromised installation media.
-
+   
+   If distribution maintainers refuse to use HTTPS even as a non-default option for installation media download,then they must maintain hash,pgp fingerprints and torrent files
+   over HTTPS.
+   Furthermore, PGP and hash verification instructions must be documented and maintained well. 
+   
+   The verification instructions must be written so that anyone with minimal technical expertise can follow along.
+   Such instructions most also be posted plainly as a mandatory requirement of the installation procedure on the same page a user initiates the download process.
+   
+   
 # The many imperfections of TLS
 
    TLS and the CA system are far from perfect. however simply using HTTPS will force the attacker to compromise the CA's or the user's computer
@@ -52,6 +60,30 @@
    Absolute security is neither purused or expected as a result of using TLS or HTTPS. the only thing expected is a significant improvement in integrity
    and authenticity validation  of installation media.
 
+
+# Brief summary of installation process security for popular distributions
+
+| Distribution     | HTTPS Download | Hash checksum | PGP | GPG/Hash over HTTPS | Download page has PGP verification instructions   | Torrent | Torrent file over HTTPS
+| :------- | ----: | :---: |
+| Funtoo Linux | NO |  sha256    | NO | NO | NO | NO | NO
+| Ubuntu        | NO | sha256 md5 | Yes| NO | NO | Yes| NO
+| Mint         | NO | md5        | Yes| NO | NO | Yes| NO
+| Debian       | NO | md5,sha    | Yes| BOTH*|NO|Yes | NO
+| Mageia       | NO | md5,sha256 | Yes | NO|NO|Yes|NO
+| Fedora       | NO | sha256     | Yes | NO | Yes |Yes| Yes
+| openSUSE     | NO | sha256     | Yes | Only GPG Fingerprint| NO | Yes | NO
+| Arch Linux   | NO | sha1,md5 | Yes | Yes | NO | Yes | Yes
+| Centos      | NO | sha,md5 | Yes | NO | NO | Yes | NO
+| PCLinuxOS   |NO | md5      | NO | NO | NO | Yes | NO
+| Slackware   |NO | md5      | Yes| NO | NO | Yes | NO
+| Gentoo      |NO | sha      | Yes | Yes|NO| NO | NO
+| FreeBSD     |NO| md5,sha256| Yes |BOTH*| NO |NO| NO
+
+
+*BOTH: Depending on how you look for the hash file it is over HTTPS(for example if you download the has next to the file vs google verification instructions)
+
+N.B.: only "sha" is specified where sha256,sha1 and other sha types are supported
+Please note, the table above can change anytime and there can be incorrect entries.please report incorrect entries.
 
 # PoC usage:
 
