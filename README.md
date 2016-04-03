@@ -62,21 +62,21 @@
 
 
 # Brief summary of installation process security for popular distributions
-|    Distribution     |   HTTPS Download   |   Hash checksum   |   PGP   |  GPG/Hash over HTTPS   |   Download page has PGP verification instructions   | Torrent   | Torrent file over HTTPS   
-| :-------         |          ----: | :---:         |:-------   |   :-------       |   :-------                                  |  :-------   |     :-------        |       :------- 
-| Funtoo Linux | NO |  sha256    | NO | NO | NO | NO | NO
-| Ubuntu        | NO | sha256 md5 | Yes| NO | NO | Yes| NO
-| Mint         | NO | md5        | Yes| NO | NO | Yes| NO
-| Debian       | NO | md5,sha    | Yes| BOTH*|NO|Yes | NO
-| Mageia       | NO | md5,sha256 | Yes | NO|NO|Yes|NO
-| Fedora       | NO | sha256     | Yes | NO | Yes |Yes| Yes
-| openSUSE     | NO | sha256     | Yes | Only GPG Fingerprint| NO | Yes | NO
-| Arch Linux   | NO | sha1,md5 | Yes | Yes | NO | Yes | Yes
-| Centos      | NO | sha,md5 | Yes | NO | NO | Yes | NO
-| PCLinuxOS   |NO | md5      | NO | NO | NO | Yes | NO
-| Slackware   |NO | md5      | Yes| NO | NO | Yes | NO
-| Gentoo      |NO | sha      | Yes | Yes|NO| NO | NO
-| FreeBSD     |NO| md5,sha256| Yes |BOTH*| NO |NO| NO
+|    Distribution     |   HTTPS Download   |   Hash checksum   |   PGP   |  GPG/Hash over HTTPS   |   Download page has PGP verification instructions   |  Short/Long PGP fingerprint   |   Torrent   | Torrent file over HTTPS   |PoC working/tested | 
+| :-------         |          ----: | :---:         |:-------   |   :-------       |   :-------                                  |  :-------   | :-------   |     :-------        |       :------- |       :------- 
+| Funtoo Linux | NO |  sha256    | NO | NO | NO | ?? | NO | NO | Yes
+| Ubuntu        | NO | sha256 md5 | Yes| NO | NO | ?? | Yes| NO| NO
+| Mint         | NO | md5        | Yes| NO | NO | ?? | Yes| NO | NO
+| Debian       | NO | md5,sha    | Yes| BOTH*|NO| ?? |Yes | NO | NO
+| Mageia       | NO | md5,sha256 | Yes | NO|NO| ?? |Yes|NO | NO
+| Fedora       | NO | sha256     | Yes | NO | Yes | ?? |Yes| Yes | NO
+| openSUSE     | NO | sha256     | Yes | Only GPG Fingerprint| NO | ?? | Yes | NO | NO
+| Arch Linux   | NO | sha1,md5 | Yes | Yes | NO | ?? | Yes | Yes | NO
+| Centos      | NO | sha,md5 | Yes | NO | NO | ?? | Yes | NO | NO
+| PCLinuxOS   |NO | md5      | NO | NO | NO | ?? | Yes | NO | NO
+| Slackware   |NO | md5      | Yes| NO | NO | ?? | Yes | NO | NO
+| Gentoo      |NO | sha      | Yes | Yes|NO| ?? | NO | NO | NO
+| FreeBSD     |NO| md5,sha256| Yes |BOTH*| NO | ?? |NO| NO | NO
 
 # PoC usage:
 

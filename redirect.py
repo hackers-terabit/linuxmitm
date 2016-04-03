@@ -24,10 +24,12 @@ def header_factory(location, content_type):
 h_funtoo_iso = header_factory("http://REPLACEME:81/systemrescuecd-x86-4.7.1.iso", "application/x-iso9660-image")
 
 h_funtoo_stage3 = header_factory("http://REPLACEME:81/stage3-latest.tar.xz", "application/octet-stream")
+h_funtoo_hash  = header_factory("http://REPLACEME:81/stage3-latest.tar.xz.hash.txt","text/plain")
 
 download_map = {
     "Funtoo ISO": [".*\/distfiles\/sysresccd\/systemrescuecd-x86-.*\.iso", h_funtoo_iso],
-    "Funtoo stage3": [".*\/funtoo-current\/x86-64bit\/generic_64\/stage3.*", h_funtoo_stage3]
+    "Funtoo stage3": [".*\/funtoo-current\/.*\/stage3.*", h_funtoo_stage3],
+    "Funtoo Hash" :  [".*stage3-latest\.tar\.xz\.hash\.txt", h_funtoo_hash]
 }
 
 def set_flow_response(flow, headers):
