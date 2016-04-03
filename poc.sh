@@ -25,16 +25,23 @@ function popup {
 }
 #include openssl,netcat,wget here if they aren't installed
 function install_packages {
-    if [ $(which emerge) ]; then
-        $EXEC_PORTAGE
-    elif [ $(which apt-get) ]; then
-        $EXEC_APT
-    elif [ $(which yum) ]; then
-        $EXEC_YUM
-    else
-        echo "You must have one of emerge, apt-get, or yum to install dependencies"
-        echo "We're continuing anyways, good luck!"
-    fi
+  if [ $(which dialog) ]; then
+   dialog --yesno "Install dependencies?" 7 35
+     if [ $? -ge 1 ]; then
+     return
+     fi
+  fi   
+      if [ $(which emerge) ]; then
+          $EXEC_PORTAGE
+      elif [ $(which apt-get) ]; then
+          $EXEC_APT
+      elif [ $(which yum) ]; then
+          $EXEC_YUM
+      else
+          echo "You must have one of emerge, apt-get, or yum to install dependencies"
+          echo "We're continuing anyways, good luck!"
+      fi
+  
 }
 function fetch {
    if [ $# -lt 2 ]; then
@@ -223,6 +230,7 @@ dialog --checklist "What operating system distributions would you like to backdo
         
  if [ $? -ge 1 ]; then
     echo "Bye!"
+    
  fi
  
         selections=`cat $tmpchecklist`
