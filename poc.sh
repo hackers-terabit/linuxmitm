@@ -93,7 +93,7 @@ if [ $? -ge 1 ]; then
 fi
 
 cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
-tar -C backdoor-stage3 -xvf ./stage3-latest.tar.xz
+tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz
 unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
 
 # Get the backdoor scripts
