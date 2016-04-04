@@ -8,6 +8,7 @@
 #              tested on Funtoo
 #set -x
 # Dependencies
+LANG="en_US.UTF-8"
 EXEC_PORTAGE="emerge -u pip dialog cdrtools squashfs-tools lighttpd"
 EXEC_APT="apt-get install dialog lighttpd python-pip squashfs-tools genisoimage"
 EXEC_YUM="yum install dialog lighttpd python-pip squashfs-tools mkisofs cdrtools"
@@ -86,6 +87,11 @@ fi
 
 # Mount the ISO
 mount -oloop ./${RESCUE_BASE}.iso ./backdoor-iso-ro
+if [ $? -ge 1 ]; then
+   echo "Error mounting ISO $RESCUE_BASE"
+   exit
+fi
+
 cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
 tar -C backdoor-stage3 -xvf ./stage3-latest.tar.xz
 unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
