@@ -82,8 +82,8 @@ fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
  else
 fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE #replace with current stage3 url
 fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
-
 fi
+
 # Mount the ISO
 mount -oloop ./${RESCUE_BASE}.iso ./backdoor-iso-ro
 cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
