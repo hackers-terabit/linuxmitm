@@ -61,7 +61,7 @@ function install_pypi {
 }
 
 function setup_funtoo (){
-RESCUE_BASE="systemrescuecd-x86-4.7.1"
+RESCUE_BASE="systemrescuecd-x86-4.7.1.iso"
 STAGE3_BASE="stage3-latest.tar.xz"
 
 if [ -e "out/"$RESCUE_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_BASE".hash.txt" ];then
@@ -115,7 +115,7 @@ rm sysrcd*
 mv ../sysrcd-backdoored.dat ./sysrcd.dat
 md5sum sysrcd.dat > sysrcd.md5
 
-ISO_ARGS="-o ../out/${RESCUE_BASE}.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V ${RESCUE_BASE} ."
+ISO_ARGS="-o ../out/${RESCUE_BASE} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V ${RESCUE_BASE} ."
 if [ $(which mkisofs) ]; then
     ISO_EXEC="mkisofs"
 else
