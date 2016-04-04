@@ -86,7 +86,7 @@ fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
 fi
 
 # Mount the ISO
-mount -oloop ./${RESCUE_BASE}.iso ./backdoor-iso-ro
+mount -oloop ./${RESCUE_BASE} ./backdoor-iso-ro
 if [ $? -ge 1 ]; then
    echo "Error mounting ISO $RESCUE_BASE"
    exit
