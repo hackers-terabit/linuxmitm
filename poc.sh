@@ -237,7 +237,7 @@ else
     INTERFACE="$(ip neigh show to $VICTIM_IP | awk '{print $3}')"
 fi
 
-INTERFACE_IP="$(ip -4 addr show $INTERFACE | grep -oP "(?<=inet).*(?=/)" )"
+INTERFACE_IP="$(ip -4 addr show $INTERFACE | grep -oP "(?<=inet).*(?=/)"  | sed -e 's/^[ \t]*//')"
 
 if [ $? -ge 1 ]; then
    INTERFACE_IP="0.0.0.0"
