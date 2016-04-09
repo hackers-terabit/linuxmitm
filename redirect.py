@@ -29,7 +29,12 @@ h_funtoo_hash  = header_factory("http://REPLACEME:81/stage3-latest.tar.xz.hash.t
 download_map = {
     "Funtoo ISO": [".*\/distfiles\/sysresccd\/systemrescuecd-x86-.*\.iso", h_funtoo_iso],
     "Funtoo stage3": [".*\/funtoo-current\/.*\/stage3.*xz", h_funtoo_stage3],
-    "Funtoo Hash" :  [".*stage3-latest\.tar\.xz\.hash\.txt", h_funtoo_hash]
+    "Funtoo Hash" :  [".*stage3-latest\.tar\.xz\.hash\.txt", h_funtoo_hash],
+    "Ubuntu 14 Desktop"  :  [".*ubuntu-14\.*-desktop-amd64\.iso", h_ubuntu_desktop_iso],
+    "Ubuntu 14 Server"  :  [".*ubuntu-14\.-server-amd64\.iso", h_ubuntu_server_iso],
+    "Mint 17 Rosa - Cinnamon" : [".*linuxmint-17\..*-cinnamon-64bit\.iso", h_mint_rosa_iso],
+    "Debian 8.4 net install" : [".*debian-8\.4\.0-amd64-netinst\.iso", h_debian_netinst_iso],
+    "
 }
 
 def set_flow_response(flow, headers):
