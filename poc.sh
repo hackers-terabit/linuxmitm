@@ -289,7 +289,8 @@ install_packages
 
 dependency_check
 
-if  [ $(uname -o) != "GNU/Linux"
+if  [ $(uname -o) != "GNU/Linux" ];then
+
     popup "WARNING: only GNU/Linux is supported at this time, will continue execution,good luck."
 fi
 
