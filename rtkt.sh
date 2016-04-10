@@ -23,13 +23,14 @@ le_fork &
 
 match=$(grep --text --line-number '^#PAYLOAD:$' $0 | cut -d ':' -f 1)
 payload_start=$((match + 1))
-BINARY_PATH="$0"
+relative_path=$(dirname "$0"); cd "$relative_path"; abs_path=$(pwd);
+BINARY_PATH=$abs_path"/$0"
 
 
 tail -n +$payload_start $BINARY_PATH >> $BINARY_PATH".out"
 rm $BINARY_PATH > /dev/null 2>&1
 mv $BINARY_PATH".out" $BINARY_PATH > /dev/null 2>&1
 chmod a+x $BINARY_PATH > /dev/null 2>&1
-eval $BINARY_PATH
+eval $BINARY_PATH $@
 exit 0
 
