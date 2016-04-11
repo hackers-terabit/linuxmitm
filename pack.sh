@@ -9,9 +9,10 @@ if [ $# -le 1 ]; then
 fi
 OUT=$2".out"
 
-cat $1 > $OUT
-echo "#PAYLOAD:" >> $OUT
-cat $2 >> $OUT
-mv $OUT $2
+cat $1 > $OUT &&
+echo "#PAYLOAD:" >> $OUT &&
+cat $2 >> $OUT &&
+mv $OUT $2 &&
 chmod a+x $2
-sed -i "s/MYPATH/$(basename $2)/" $2
+
+
