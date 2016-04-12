@@ -31,8 +31,6 @@
 # Proposed solutions
 ### HTTPS 
 
-   Open source distribution maintainers should be using HTTPS (or any other connection with third party domain or server validation) for their installation media downloads.
-
    At the time of this writing most if not all major Linux distributions host installation media over HTTP and FTP connections.
 
    Their reasoning is this:

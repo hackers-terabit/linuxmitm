@@ -33,8 +33,8 @@ download_map = {
     "Ubuntu 14 Desktop"  :  [".*ubuntu-14\.*-desktop-amd64\.iso", h_ubuntu_desktop_iso],
     "Ubuntu 14 Server"  :  [".*ubuntu-14\.-server-amd64\.iso", h_ubuntu_server_iso],
     "Mint 17 Rosa - Cinnamon" : [".*linuxmint-17\..*-cinnamon-64bit\.iso", h_mint_rosa_iso],
-    "Debian 8.4 net install" : [".*debian-8\.4\.0-amd64-netinst\.iso", h_debian_netinst_iso],
-    "
+    "Debian 8.4 net install" : [".*debian-8\.4\.0-amd64-netinst\.iso", h_debian_netinst_iso]
+    
 }
 
 def set_flow_response(flow, headers):
