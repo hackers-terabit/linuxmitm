@@ -36,10 +36,12 @@ function dependency_check {
      fi
    done
    
-   if [ $(which mkisofs) ]; then
+if [ $(which mkisofs) ]; then
     ISO_EXEC="mkisofs"
-else if [ $(which genisoimage) ]; then
-    ISO_EXEC="genisoimage"
+else 
+ if [ $(which genisoimage) ]; then
+     ISO_EXEC="genisoimage"
+ fi
 else 
     echo "Unable to find mkisofs or genisoimage,exiting..."
     exit
@@ -486,7 +488,8 @@ sed -i "s#PWD#${PWD}#" lighttpd.conf
          echo "Error fetching and configuring lighttpd" 
          exit
      fi
-     
+  
+killall lighttpd
 lighttpd -f lighttpd.conf&
 
 if [ $? -ne 0 ]; then
