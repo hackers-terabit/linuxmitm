@@ -39,14 +39,14 @@ function dependency_check {
 if [ $(which mkisofs) ]; then
     ISO_EXEC="mkisofs"
 else 
- if [ $(which genisoimage) ]; then
-     ISO_EXEC="genisoimage"
- fi
+if [ $(which genisoimage) ]; then
+    ISO_EXEC="genisoimage"
+
 else 
     echo "Unable to find mkisofs or genisoimage,exiting..."
     exit
 fi
-
+fi
 }
 #include openssl,netcat,wget here if they aren't installed
 function install_packages {
